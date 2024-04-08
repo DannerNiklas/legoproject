@@ -2,6 +2,7 @@
 from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor,
                                  InfraredSensor, UltrasonicSensor, GyroSensor)
+from pybricks.nxtdevices import (LightSensor)
 from pybricks.parameters import Port, Stop, Direction, Button, Color
 from pybricks.tools import wait, StopWatch, DataLog
 from pybricks.robotics import DriveBase
@@ -20,8 +21,8 @@ robot = DriveBase(left_motor, right_motor, wheel_diameter=55.5, axle_track=104)
 rotation_angle = 180
 
 # Initialize the sensors
-left_color_sensor = ColorSensor(Port.S3)
-right_color_sensor = ColorSensor(Port.S4)
+left_color_sensor = ColorSensor(Port.S4)
+right_color_sensor = LightSensor(Port.S3)
 front_ultrasonic_sensor = UltrasonicSensor(Port.S2)
 
 # Define the balloon color
@@ -42,19 +43,20 @@ def search_for_balloon():
     isDriving = False
     while True:
         # Read the color sensors
-        left_color = left_color_sensor.color()
-        right_color = right_color_sensor.color()
+        current_reflection_left = left_color_sensor.reflection();
+        current_reflection_right = right_color_sensor.reflection();
 
+        print("sensor left: ", current_reflection_left)
+        print("sensor right: ", current_reflection_right)
 
-        if (left_color_sensor.reflection() < reflection_left):
-            robot.stop
-            robot.turn(-rotation_angle)
-            continue
-        elif (right_color_sensor.reflection() < reflection_right):
+        if (current_reflection_left < reflection_left):
             robot.stop
             robot.turn(rotation_angle)
             isDriving = False
-            continue
+        elif (current_reflection_right < reflection_right):
+            robot.stop
+            robot.turn(-rotation_angle)
+            isDriving = False
 
         # Read the ultrasonic sensor
         distance = front_ultrasonic_sensor.distance()
