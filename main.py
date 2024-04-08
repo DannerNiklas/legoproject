@@ -3,6 +3,7 @@ from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor,
                                  InfraredSensor, UltrasonicSensor, GyroSensor)
 from pybricks.nxtdevices import (LightSensor)
+from pybricks.nxtdevices import (ColorSensor) as nxtColorSensor
 from pybricks.parameters import Port, Stop, Direction, Button, Color
 from pybricks.tools import wait, StopWatch, DataLog
 from pybricks.robotics import DriveBase
@@ -24,6 +25,7 @@ rotation_angle = 180
 left_color_sensor = ColorSensor(Port.S4)
 right_color_sensor = LightSensor(Port.S3)
 front_ultrasonic_sensor = UltrasonicSensor(Port.S2)
+color_sensor = nxtColorSensor(Port.S1)
 
 # Define the balloon color
 BALLOON_COLOR = Color.RED
@@ -59,7 +61,8 @@ def search_for_balloon():
             isDriving = False
 
         # Read the ultrasonic sensor
-        distance = front_ultrasonic_sensor.distance()
+        #distance = front_ultrasonic_sensor.distance()
+        
         
         
         # Otherwise, keep moving forward
