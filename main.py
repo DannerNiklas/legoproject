@@ -3,7 +3,7 @@ from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor,
                                  InfraredSensor, UltrasonicSensor, GyroSensor)
 from pybricks.nxtdevices import (LightSensor)
-from pybricks.nxtdevices import (ColorSensor) as nxtColorSensor
+#from pybricks.nxtdevices import (ColorSensor)
 from pybricks.parameters import Port, Stop, Direction, Button, Color
 from pybricks.tools import wait, StopWatch, DataLog
 from pybricks.robotics import DriveBase
@@ -11,6 +11,8 @@ from pybricks.media.ev3dev import SoundFile, ImageFile
 
 # Initialize the EV3 Brick
 ev3 = EV3Brick()
+
+# Killarm Motor is C
 
 # Initialize the motors
 left_motor = Motor(Port.D)
@@ -23,9 +25,9 @@ rotation_angle = 180
 
 # Initialize the sensors
 left_color_sensor = ColorSensor(Port.S4)
-right_color_sensor = LightSensor(Port.S3)
+right_color_sensor = ColorSensor(Port.S3)
 front_ultrasonic_sensor = UltrasonicSensor(Port.S2)
-color_sensor = nxtColorSensor(Port.S1)
+#color_sensor = nxtColorSensor(Port.S1)
 
 # Define the balloon color
 BALLOON_COLOR = Color.RED
@@ -40,6 +42,8 @@ BALLOON_DISTANCE = 500
 COLOR_SENSOR_DISTANCE = 50
 
 isDriving = False
+
+
 
 def search_for_balloon():
     isDriving = False
