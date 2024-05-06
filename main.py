@@ -25,10 +25,10 @@ robot = DriveBase(left_motor, right_motor, wheel_diameter=55.5, axle_track=104)
 rotation_angle = 180
 
 # Initialize the sensors
-left_color_sensor = ColorSensor(Port.S4)
+#left_color_sensor = ColorSensor(Port.S4)
 right_color_sensor = ColorSensor(Port.S3)
 front_ultrasonic_sensor = UltrasonicSensor(Port.S2)
-color_sensor = LightSensor(Port.S1)
+color_sensor = LightSensor(Port.S4)
 
 # Define the balloon color
 BALLOON_COLOR = Color.RED
@@ -84,16 +84,19 @@ def log_battle_data():
     DataLog.log(popedBallons)
 
 # speed of killer arm
-speedKiller = 10
+speedKiller = 150
 angleKiller = 180
 
 def destroy():    
-    i = 0
-    while i < 2:
-        run_target(speedKiller, angleKiller)
-        run_target(speedKiller, -angleKiller)
-        i += 1
+    maxDistance = 80
+    isDestroyed = False
+    destroyedBallonCounter = 0
+    while front_ultrasonic_sensor.distance() > 0 and front_ultrasonic_sensor.distance() < maxDistance:
+        killer_motor.run_target(speedKiller, -angleKiller)
+        killer_motor.run_target(speedKiller, 0)
     destroyedBallonCounter += 1
+    
+
 
 def scanInitialColor():
     i = 0
@@ -130,26 +133,29 @@ def searchBallon ():
     robot.drive(100, 0)
     
     # TODO: edge found
-    while destroyedBallonCounter <= maxBallonAmount: # TODO add and
+    #while destroyedBallonCounter <= maxBallonAmount and right_color_sensor.reflection() > reflection_right: # TODO add and
         # TODO:
-        #if ballon found 
+        #if color_sensor.reflection > 0
+            #robot.stop()
+            
+
             #destroy()
         #if count = amount
             #set color to black 
     
     #if not finished, drive backwards and look for black ballon
     #stop and drive backwards
-    while destroyedBallonCounter <= maxBallonAmount:
+    #while destroyedBallonCounter <= maxBallonAmount:
         #if ballon found 
             #destroy()
         #if count = amount
             #set color to black 
-    robot.stop()
+    #robot.stop()
 
 
 def main ():
-    scanInitialColor()
-    searchBallon()
-    
+    #scanInitialColor()
+    #searchBallon()
+    destroy()
     
 main()
