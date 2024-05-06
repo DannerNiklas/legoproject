@@ -74,4 +74,8 @@ def search_for_balloon():
             robot.drive(100, 0)
             isDriving = True
 
+def log_battle_data(): 
+    DataLog.log(teamColour)
+    DataLog.log(popedBallons)
+
 search_for_balloon()
