@@ -61,6 +61,8 @@ MAX_TEAM_BALLOONS = 3
 SPEED_KILL_ARM = 150
 ANGLE_KILL_ARM = 180
 
+#Sensor constants
+ULSO_MAX_DISTANCE = 80
 """
 -------------------------------------------------------
 Runtime variables
@@ -76,8 +78,6 @@ curr_color_to_kill = BALLOON_COLOR
 
 finished = False
 
-maxUlSoDistance = 80
-
 """
 -------------------------------------------------------
 Functions
@@ -85,7 +85,7 @@ Functions
 """ 
 
 def destroy(color_to_kill):    
-    while front_ultrasonic_sensor.distance() > 0 and front_ultrasonic_sensor.distance() < maxUlSoDistance:
+    while front_ultrasonic_sensor.distance() > 0 and front_ultrasonic_sensor.distance() < ULSO_MAX_DISTANCE:
         killer_motor.run_target(SPEED_KILL_ARM, -ANGLE_KILL_ARM)
         killer_motor.run_target(SPEED_KILL_ARM, 0)
     destroyed_balloon_counter += 1
