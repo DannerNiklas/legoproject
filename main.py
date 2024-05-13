@@ -40,7 +40,7 @@ touch_sensor = TouchSensor(Port.S1)
 robot = DriveBase(left_motor, right_motor, wheel_diameter=55.5, axle_track=104)
 """
 -------------------------------------------------------
-CONSTATNS
+CONSTANTS
 -------------------------------------------------------
 """ 
 # Define the distance to the balloon (in mm)
@@ -76,6 +76,7 @@ curr_color_to_kill = BALLOON_COLOR
 
 finished = False
 
+maxUlSoDistance = 80
 
 """
 -------------------------------------------------------
@@ -84,10 +85,7 @@ Functions
 """ 
 
 def destroy(color_to_kill):    
-    maxDistance = 80
-    isDestroyed = False
-    destroyed_balloon_counter = 0
-    while front_ultrasonic_sensor.distance() > 0 and front_ultrasonic_sensor.distance() < maxDistance:
+    while front_ultrasonic_sensor.distance() > 0 and front_ultrasonic_sensor.distance() < maxUlSoDistance:
         killer_motor.run_target(SPEED_KILL_ARM, -ANGLE_KILL_ARM)
         killer_motor.run_target(SPEED_KILL_ARM, 0)
     destroyed_balloon_counter += 1
