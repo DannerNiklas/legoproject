@@ -1,3 +1,8 @@
+"""
+-------------------------------------------------------
+Copyright: Gruppe 5
+-------------------------------------------------------
+""" 
 #!/usr/bin/env pybricks-micropython
 from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import (Motor, ColorSensor,
@@ -42,6 +47,7 @@ CONSTATNS
 BALLOON_DISTANCE = 500
 # Define the balloon color
 BALLOON_COLOR = Color.RED
+BLACK_COLOR = Color.BLACK
 ROTATION_ANGLE = 180
 REFLECTION_RIGHT = 10
 
@@ -61,16 +67,23 @@ Runtime variables
 -------------------------------------------------------
 """ 
 
-
-is_driving = False
-
 balloon_color = 0
 
 # amount of destroyed ballons
 destroyed_balloon_counter = 0
 
+curr_color_to_kill = BALLOON_COLOR
 
-def destroy():    
+finished = False
+
+
+"""
+-------------------------------------------------------
+Functions
+-------------------------------------------------------
+""" 
+
+def destroy(color_to_kill):    
     maxDistance = 80
     isDestroyed = False
     destroyed_balloon_counter = 0
@@ -78,6 +91,9 @@ def destroy():
         killer_motor.run_target(SPEED_KILL_ARM, -ANGLE_KILL_ARM)
         killer_motor.run_target(SPEED_KILL_ARM, 0)
     destroyed_balloon_counter += 1
+    if color_to_kill = BLACK_COLOR:
+        finished = True
+        
 
 
 def scanInitialColor():
@@ -89,31 +105,33 @@ def scanInitialColor():
         i += 1
     balloon_color = sum_color / amount
 
-def scanForColor():
+def scanForColor(color_to_kill):
     curr_color = color_sensor.reflection()
     #check if color is within balloon color range
-    if balloon_color - COLOR_TOLERANCE < curr_color < balloon_color + COLOR_TOLERANCE:
-        #if color is within range, perform indepth colour check to avoid false positives
-        i = 0
-        sum_color = 0
-        amount = 20
-        while i < amount:
-            sum_color += color_sensor.reflection()
-            i += 1
-        curr_color = sum_color / amount
-        if balloon_color - COLOR_TOLERANCE < curr_color < balloon_color + COLOR_TOLERANCE:
-            return True
-        else:
-            return False
+    if (color_to_kill - COLOR_TOLERANCE) < curr_color < (color_to_kill + COLOR_TOLERANCE):
+        return True
     else:
         return False
 
+def scanForColorDetailed(color_to_kill):
+    #if color is within range, perform indepth colour check to avoid false positives
+    i = 0
+    sum_color = 0
+    amount = 20
+    while i < amount:
+        sum_color += color_sensor.reflection()
+        i += 1
+    curr_color = sum_color / amount
+    if (color_to_kill - COLOR_TOLERANCE) < curr_color < (color_to_kill + COLOR_TOLERANCE):
+        return True
+    else:
+        return False
 
 def driveIntoPosition(): 
     # robot is in starting position right now
     # turn slighty away from edge to have maneuverability
     robot.turn(20)
-    robot.straight(50) # 5cm TODO: to be tested
+    robot.straight(50) # 5cm TODO: adjust distance for competetive setting
     robot.turn(-20)
 
     # drive straight ahead until touch sensor discovered end        
@@ -125,54 +143,61 @@ def driveIntoPosition():
     robot.stop()
     
     # turn 90° and avoid obsticle
-    robot.straight(-20) # TODO: testing
+    robot.straight(-20) # TODO: adjust distance for competetive setting
     robot.turn(90)
 
     # robot is now in place to start searching for balloons
 
+def returnToStartPos(distance_to_start_pos): 
+    robot.reset() #resets distance driven
+    while robot.distance() < distance_to_start_pos:
+        robot.drive(-100, 0)
+    robot.stop()
+    searchBalloon()
+    
+def setCurrColorToKill():
+    if destroyedBallonCounter < MAX_TEAM_BALLOONS: 
+        curr_color_to_kill = BALLOON_COLOR
+    else 
+        curr_color_to_kill = BLACK_COLOR
 
-def searchBallon():
+def searchBalloon():
+    setCurrColorToKill()
+
+    robot.reset() #resets distance driven
 
     # drive forward and look for ballon until edge
-    foundBalloon = False    
     robot.drive(100, 0)
     
     edge_reached = False
-    while not edge_reached:
+    while not edge_reached and not finished:
+        #check if the sensor discovers the right balloon color 
+        if scanForColor():
+            robot.stop()
+            if scanForColorDetailed(curr_color_to_kill):
+                destroy(curr_color_to_kill)
+                setCurrColorToKill()
+            robot.drive(100, 0)
 
-        if destroyedBallonCounter < MAX_TEAM_BALLOONS and scanForColor():
-            destroy()
-
+        #edge detection
         current_reflection_right = right_color_sensor.reflection();
         if (current_reflection_right < REFLECTION_RIGHT):
             robot.stop()
             edge_reached = True
 
+    if not finished:
+        returnToStartPos(robot.distance())
 
-    # TODO: edge found
-    #while destroyedBallonCounter <= maxBallonAmount and right_color_sensor.reflection() > reflection_right: # TODO add and
-        # TODO:
-        #if color_sensor.reflection > 0
-            #robot.stop()
-            
-
-            #destroy()
-        #if count = amount
-            #set color to black 
-    
-    #if not finished, drive backwards and look for black ballon
-    #stop and drive backwards
-    #while destroyedBallonCounter <= maxBallonAmount:
-        #if ballon found 
-            #destroy()
-        #if count = amount
-            #set color to black 
-    #robot.stop()
+"""
+-------------------------------------------------------
+main
+-------------------------------------------------------
+""" 
 
 
 def main ():
-    #scanInitialColor()
-    #searchBallon()
-    destroy()
+    scanInitialColor()
+    driveIntoPosition()
+    searchBalloon()
     
 main()
