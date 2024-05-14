@@ -3,6 +3,8 @@
 Copyright: Gruppe 5
 -------------------------------------------------------
 """ 
+#TODO: add more comments
+
 #!/usr/bin/env pybricks-micropython
 from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import (Motor, ColorSensor,
@@ -120,6 +122,7 @@ def scanForColorDetailed(color_to_kill):
         sum_color += color_sensor.reflection()
         i += 1
     curr_color = sum_color / amount
+    #TODO: own function to check if color is in range and return calc value instead
     if (color_to_kill - COLOR_TOLERANCE) < curr_color < (color_to_kill + COLOR_TOLERANCE):
         return True
     else:
@@ -128,6 +131,7 @@ def scanForColorDetailed(color_to_kill):
 def driveIntoPosition(): 
     # robot is in starting position right now
     # turn slighty away from edge to have maneuverability
+    #TODO: constants
     robot.turn(20)
     robot.straight(50) # 5cm TODO: adjust distance for competetive setting
     robot.turn(-20)
@@ -170,6 +174,7 @@ def searchBalloon():
     edge_reached = False
     while not edge_reached and not finished:
         #check if the sensor discovers the right balloon color 
+        #TODO: rename to correct ballon color found or color in range/scope
         if scanForColor():
             robot.stop()
             if scanForColorDetailed(curr_color_to_kill):
