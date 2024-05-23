@@ -36,7 +36,7 @@ right_motor = Motor(Port.A)
 # Initialize the sensors
 right_color_sensor = ColorSensor(Port.S3)
 balloon_ultrasonic_sensor = UltrasonicSensor(Port.S4)
-balloon_color_sensor = ColorSensor(Port.S1)
+color_sensor = ColorSensor(Port.S1)
 touch_sensor = TouchSensor(Port.S2)
 
 # Initialize the drive base
@@ -112,9 +112,9 @@ def scanInitialColor():
         sum_color_g += color_tupple[1]
         sum_color_b += color_tupple[2]
         i += 1
-    balloon_color_r = sum_color / amount
-    balloon_color_g = sum_color / amount
-    balloon_color_b = sum_color / amount
+    balloon_color_r = sum_color_r / SCAN_COUNT
+    balloon_color_g = sum_color_g / SCAN_COUNT
+    balloon_color_b = sum_color_b / SCAN_COUNT
 
 
 def scanForColor(color_to_kill):
@@ -141,9 +141,9 @@ def scanForColorDetailed(color_to_kill):
         sum_color_g += color_tupple[1]
         sum_color_b += color_tupple[2]
         i += 1
-    curr_color_r = sum_color_r / amount
-    curr_color_g = sum_color_g / amount
-    curr_color_b = sum_color_b / amount
+    curr_color_r = sum_color_r / SCAN_COUNT
+    curr_color_g = sum_color_g / SCAN_COUNT
+    curr_color_b = sum_color_b / SCAN_COUNT
     curr_color = (curr_color_r, curr_color_g, curr_color_b)
 
     #TODO: own function to check if color is in range and return calc value instead
@@ -191,7 +191,7 @@ def returnToStartPos(distance_to_start_pos):
     searchBalloon()
     
 def setCurrColorToKill():
-    if destroyedBallonCounter < MAX_TEAM_BALLOONS: 
+    if destroyed_balloon_counter < MAX_TEAM_BALLOONS: 
         curr_color_to_kill = BALLOON_COLOR
     else:
         curr_color_to_kill = COLOR_WHITE
@@ -208,7 +208,7 @@ def searchBalloon():
     while not edge_reached and not finished:
         #check if the sensor discovers the right balloon color 
         #TODO: rename to correct ballon color found or color in range/scope
-        if scanForColor():
+        if scanForColor(curr_color_to_kill):
             robot.stop()
             if scanForColorDetailed(curr_color_to_kill):
                 destroy(curr_color_to_kill)
