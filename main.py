@@ -49,8 +49,8 @@ CONSTANTS
 # Define the distance to the balloon (in mm)
 BALLOON_DISTANCE = 500
 # Define the balloon color
-BALLOON_COLOR = Color.RED
-COLOR_WHITE = Color.WHITE
+BALLOON_COLOR = (255, 0, 0)
+COLOR_WHITE = (255, 255, 255)
 ROTATION_ANGLE = 180
 REFLECTION_RIGHT = 10
 
