@@ -115,15 +115,18 @@ def scanInitialColor():
     balloon_color_r = sum_color_r / SCAN_COUNT
     balloon_color_g = sum_color_g / SCAN_COUNT
     balloon_color_b = sum_color_b / SCAN_COUNT
+    print(balloon_color_r)
+    print(balloon_color_g)
+    print(balloon_color_b)
 
 
 def scanForColor(color_to_kill):
     curr_color = color_sensor.rgb()
-    
     #check if color is within balloon color range
-    r_correct = ((color_to_kill[0] - COLOR_TOLERANCE) < curr_color[0] < (color_to_kill[0] + COLOR_TOLERANCE))
-    g_correct = ((color_to_kill[1] - COLOR_TOLERANCE) < curr_color[1] < (color_to_kill[1] + COLOR_TOLERANCE))
-    b_correct = ((color_to_kill[2] - COLOR_TOLERANCE) < curr_color[2] < (color_to_kill[2] + COLOR_TOLERANCE))
+    r_correct = ((balloon_color_r - COLOR_TOLERANCE) < curr_color[0] < (balloon_color_r + COLOR_TOLERANCE))
+    g_correct = ((balloon_color_g - COLOR_TOLERANCE) < curr_color[1] < (balloon_color_g + COLOR_TOLERANCE))
+    b_correct = ((balloon_color_b - COLOR_TOLERANCE) < curr_color[2] < (balloon_color_b + COLOR_TOLERANCE))
+    
     if r_correct and g_correct and b_correct:
         return True
     else:
@@ -147,9 +150,9 @@ def scanForColorDetailed(color_to_kill):
     curr_color = (curr_color_r, curr_color_g, curr_color_b)
 
     #TODO: own function to check if color is in range and return calc value instead
-    r_correct = ((color_to_kill[0] - COLOR_TOLERANCE) < curr_color[0] < (color_to_kill[0] + COLOR_TOLERANCE))
-    g_correct = ((color_to_kill[1] - COLOR_TOLERANCE) < curr_color[1] < (color_to_kill[1] + COLOR_TOLERANCE))
-    b_correct = ((color_to_kill[2] - COLOR_TOLERANCE) < curr_color[2] < (color_to_kill[2] + COLOR_TOLERANCE))
+    r_correct = ((balloon_color_r - COLOR_TOLERANCE) < curr_color[0] < (balloon_color_r + COLOR_TOLERANCE))
+    g_correct = ((balloon_color_g - COLOR_TOLERANCE) < curr_color[1] < (balloon_color_g + COLOR_TOLERANCE))
+    b_correct = ((balloon_color_b - COLOR_TOLERANCE) < curr_color[2] < (balloon_color_b + COLOR_TOLERANCE))
     if r_correct and g_correct and b_correct:
         return True
     else:
@@ -173,7 +176,7 @@ def driveIntoPosition():
     robot.stop()
     
     # turn 90° and avoid obsticle
-    robot.straight(-50) # TODO: adjust distance for competetive setting
+    robot.straight(-20) # TODO: adjust distance for competetive setting
     robot.turn(45)
     robot.turn(45)
     robot.turn(45)
@@ -191,6 +194,7 @@ def returnToStartPos(distance_to_start_pos):
     searchBalloon()
     
 def setCurrColorToKill():
+    #TODO: fix this and add 3rgb values
     if destroyed_balloon_counter < MAX_TEAM_BALLOONS: 
         curr_color_to_kill = BALLOON_COLOR
     else:
