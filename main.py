@@ -121,9 +121,10 @@ def scanForColor(color_to_kill):
     curr_color = color_sensor.rgb()
     
     #check if color is within balloon color range
-    if ((color_to_kill[0] - COLOR_TOLERANCE) < curr_color[0] < (color_to_kill[0] + COLOR_TOLERANCE)) and 
-        ((color_to_kill[1] - COLOR_TOLERANCE) < curr_color[1] < (color_to_kill[1] + COLOR_TOLERANCE)) and
-        ((color_to_kill[2] - COLOR_TOLERANCE) < curr_color[2] < (color_to_kill[2] + COLOR_TOLERANCE)):
+    r_correct = ((color_to_kill[0] - COLOR_TOLERANCE) < curr_color[0] < (color_to_kill[0] + COLOR_TOLERANCE))
+    g_correct = ((color_to_kill[1] - COLOR_TOLERANCE) < curr_color[1] < (color_to_kill[1] + COLOR_TOLERANCE))
+    b_correct = ((color_to_kill[2] - COLOR_TOLERANCE) < curr_color[2] < (color_to_kill[2] + COLOR_TOLERANCE))
+    if r_correct and g_correct and b_correct:
         return True
     else:
         return False
@@ -146,9 +147,10 @@ def scanForColorDetailed(color_to_kill):
     curr_color = (curr_color_r, curr_color_g, curr_color_b)
 
     #TODO: own function to check if color is in range and return calc value instead
-    if ((color_to_kill[0] - COLOR_TOLERANCE) < curr_color[0] < (color_to_kill[0] + COLOR_TOLERANCE)) and 
-        ((color_to_kill[1] - COLOR_TOLERANCE) < curr_color[1] < (color_to_kill[1] + COLOR_TOLERANCE)) and
-        ((color_to_kill[2] - COLOR_TOLERANCE) < curr_color[2] < (color_to_kill[2] + COLOR_TOLERANCE)):
+    r_correct = ((color_to_kill[0] - COLOR_TOLERANCE) < curr_color[0] < (color_to_kill[0] + COLOR_TOLERANCE))
+    g_correct = ((color_to_kill[1] - COLOR_TOLERANCE) < curr_color[1] < (color_to_kill[1] + COLOR_TOLERANCE))
+    b_correct = ((color_to_kill[2] - COLOR_TOLERANCE) < curr_color[2] < (color_to_kill[2] + COLOR_TOLERANCE))
+    if r_correct and g_correct and b_correct:
         return True
     else:
        return False
