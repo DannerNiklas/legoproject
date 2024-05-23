@@ -9,8 +9,8 @@ Copyright: Gruppe 5
 
 from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import (Motor, ColorSensor,
-                                 InfraredSensor, UltrasonicSensor, GyroSensor)
-from pybricks.nxtdevices import (LightSensor, TouchSensor)
+                                 InfraredSensor, UltrasonicSensor, GyroSensor, TouchSensor)
+from pybricks.nxtdevices import (LightSensor)
 #from pybricks.nxtdevices import (ColorSensor)
 from pybricks.parameters import Port, Stop, Direction, Button, Color
 from pybricks.tools import wait, StopWatch, DataLog
@@ -35,8 +35,8 @@ right_motor = Motor(Port.A)
 
 # Initialize the sensors
 right_color_sensor = ColorSensor(Port.S3)
-balloon_ultrasonic_sensor = UltrasonicSensor(Port.S4)
-balloon_color_sensor = LightSensor(Port.S1)
+balloon_infrared_sensor = UltrasonicSensor(Port.S4)
+balloon_color_sensor = ColorSensor(Port.S1)
 touch_sensor = TouchSensor(Port.S2)
 
 # Initialize the drive base
@@ -50,29 +50,33 @@ CONSTANTS
 BALLOON_DISTANCE = 500
 # Define the balloon color
 BALLOON_COLOR = Color.RED
-BLACK_COLOR = Color.BLACK
+COLOR_WHITE = Color.WHITE
 ROTATION_ANGLE = 180
 REFLECTION_RIGHT = 10
+
+SCAN_COUNT = 20
 
 # Define the distance to the balloon (in mm) for the color sensor
 COLOR_SENSOR_DISTANCE = 50
 COLOR_TOLERANCE = 5
 
-MAX_TEAM_BALLOONS = 3
+MAX_TEAM_BALLOONS = 1
 
 # speed of killer arm
 SPEED_KILL_ARM = 150
 ANGLE_KILL_ARM = 180
 
 #Sensor constants
-ULTRASONIC_MAX_DISTANCE = 100
+INFRARED_MAX_DISTANCE = 10
 """
 -------------------------------------------------------
 Runtime variables
 -------------------------------------------------------
 """ 
 
-balloon_color = 0
+balloon_color_r = 0
+balloon_color_g = 0
+balloon_color_b = 0
 
 # amount of destroyed ballons
 destroyed_balloon_counter = 0
@@ -88,28 +92,38 @@ Functions
 """ 
 
 def destroy(color_to_kill):    
-    while balloon_ultrasonic_sensor.distance() > 0 and balloon_ultrasonic_sensor.distance() < ULTRASONIC_MAX_DISTANCE:
+    while balloon_infrared_sensor.distance() > 0 and balloon_infrared_sensor.distance() < INFRARED_MAX_DISTANCE:
         killer_motor.run_target(SPEED_KILL_ARM, -ANGLE_KILL_ARM)
         killer_motor.run_target(SPEED_KILL_ARM, 0)
     destroyed_balloon_counter += 1
-    if color_to_kill = BLACK_COLOR:
+    if color_to_kill is COLOR_WHITE:
         finished = True
         
 
 
 def scanInitialColor():
     i = 0
-    sum_color = 0
-    amount = 20
-    while i < amount:
-        sum_color += color_sensor.reflection()
+    sum_color_r = 0
+    sum_color_g = 0
+    sum_color_b = 0
+    while i < SCAN_COUNT:
+        color_tupple = color_sensor.rgb()
+        sum_color_r += color_tupple[0]
+        sum_color_g += color_tupple[1]
+        sum_color_b += color_tupple[2]
         i += 1
-    balloon_color = sum_color / amount
+    balloon_color_r = sum_color / amount
+    balloon_color_g = sum_color / amount
+    balloon_color_b = sum_color / amount
+
 
 def scanForColor(color_to_kill):
-    curr_color = color_sensor.reflection()
+    curr_color = color_sensor.rgb()
+    
     #check if color is within balloon color range
-    if (color_to_kill - COLOR_TOLERANCE) < curr_color < (color_to_kill + COLOR_TOLERANCE):
+    if ((color_to_kill[0] - COLOR_TOLERANCE) < curr_color[0] < (color_to_kill[0] + COLOR_TOLERANCE)) and 
+        ((color_to_kill[1] - COLOR_TOLERANCE) < curr_color[1] < (color_to_kill[1] + COLOR_TOLERANCE)) and
+        ((color_to_kill[2] - COLOR_TOLERANCE) < curr_color[2] < (color_to_kill[2] + COLOR_TOLERANCE)):
         return True
     else:
         return False
@@ -117,14 +131,24 @@ def scanForColor(color_to_kill):
 def scanForColorDetailed(color_to_kill):
     #if color is within range, perform indepth colour check to avoid false positives
     i = 0
-    sum_color = 0
-    amount = 20
-    while i < amount:
-        sum_color += color_sensor.reflection()
+    sum_color_r = 0
+    sum_color_g = 0
+    sum_color_b = 0
+    while i < SCAN_COUNT:
+        color_tupple = color_sensor.rgb()
+        sum_color_r += color_tupple[0]
+        sum_color_g += color_tupple[1]
+        sum_color_b += color_tupple[2]
         i += 1
-    curr_color = sum_color / amount
+    curr_color_r = sum_color_r / amount
+    curr_color_g = sum_color_g / amount
+    curr_color_b = sum_color_b / amount
+    curr_color = (curr_color_r, curr_color_g, curr_color_b)
+
     #TODO: own function to check if color is in range and return calc value instead
-    if (color_to_kill - COLOR_TOLERANCE) < curr_color < (color_to_kill + COLOR_TOLERANCE):
+    if ((color_to_kill[0] - COLOR_TOLERANCE) < curr_color[0] < (color_to_kill[0] + COLOR_TOLERANCE)) and 
+        ((color_to_kill[1] - COLOR_TOLERANCE) < curr_color[1] < (color_to_kill[1] + COLOR_TOLERANCE)) and
+        ((color_to_kill[2] - COLOR_TOLERANCE) < curr_color[2] < (color_to_kill[2] + COLOR_TOLERANCE)):
         return True
     else:
         return False
@@ -133,11 +157,12 @@ def driveIntoPosition():
     # robot is in starting position right now
     # turn slighty away from edge to have maneuverability
     #TODO: constants
-    robot.turn(20)
-    robot.straight(50) # 5cm TODO: adjust distance for competetive setting
-    robot.turn(-20)
+    #robot.turn(20)
+    #robot.straight(200) # 5cm TODO: adjust distance for competetive setting
+    #robot.turn(-35)
 
-    # drive straight ahead until touch sensor discovered end        
+    # drive straight ahead until touch sensor discovered end 
+    robot.turn(0)       
     robot.drive(100, 0)
     while not touch_sensor.pressed():
         pass
@@ -146,8 +171,13 @@ def driveIntoPosition():
     robot.stop()
     
     # turn 90° and avoid obsticle
-    robot.straight(-20) # TODO: adjust distance for competetive setting
-    robot.turn(90)
+    robot.straight(-50) # TODO: adjust distance for competetive setting
+    robot.turn(45)
+    robot.turn(45)
+    robot.turn(45)
+    robot.turn(45)
+    robot.turn(45)
+    robot.turn(35) #TODO: Test winkl
 
     # robot is now in place to start searching for balloons
 
@@ -161,8 +191,8 @@ def returnToStartPos(distance_to_start_pos):
 def setCurrColorToKill():
     if destroyedBallonCounter < MAX_TEAM_BALLOONS: 
         curr_color_to_kill = BALLOON_COLOR
-    else 
-        curr_color_to_kill = BLACK_COLOR
+    else:
+        curr_color_to_kill = COLOR_WHITE
 
 def searchBalloon():
     setCurrColorToKill()
@@ -204,4 +234,4 @@ def main_function():
     driveIntoPosition()
     #searchBalloon()
     
-main()
+main_function()
