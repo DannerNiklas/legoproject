@@ -1,3 +1,4 @@
+#!/usr/bin/env pybricks-micropython
 # Killarm Motor is C
 """
 -------------------------------------------------------
@@ -6,7 +7,6 @@ Copyright: Gruppe 5
 """ 
 #TODO: add more comments
 
-#!/usr/bin/env pybricks-micropython
 from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import (Motor, ColorSensor,
                                  InfraredSensor, UltrasonicSensor, GyroSensor)
