@@ -35,7 +35,7 @@ right_motor = Motor(Port.A)
 
 # Initialize the sensors
 right_color_sensor = ColorSensor(Port.S3)
-balloon_infrared_sensor = InfraredSensor(Port.S4)
+balloon_ultrasonic_sensor = UltrasonicSensor(Port.S4)
 balloon_color_sensor = LightSensor(Port.S1)
 touch_sensor = TouchSensor(Port.S2)
 
@@ -65,7 +65,7 @@ SPEED_KILL_ARM = 150
 ANGLE_KILL_ARM = 180
 
 #Sensor constants
-INFRARED_MAX_DISTANCE = 10
+ULTRASONIC_MAX_DISTANCE = 100
 """
 -------------------------------------------------------
 Runtime variables
@@ -88,7 +88,7 @@ Functions
 """ 
 
 def destroy(color_to_kill):    
-    while balloon_infrared_sensor.distance() > 0 and balloon_infrared_sensor.distance() < INFRARED_MAX_DISTANCE:
+    while balloon_ultrasonic_sensor.distance() > 0 and balloon_ultrasonic_sensor.distance() < ULTRASONIC_MAX_DISTANCE:
         killer_motor.run_target(SPEED_KILL_ARM, -ANGLE_KILL_ARM)
         killer_motor.run_target(SPEED_KILL_ARM, 0)
     destroyed_balloon_counter += 1
