@@ -9,13 +9,11 @@ Copyright: Gruppe 5
 
 from pybricks.hubs import EV3Brick
 from pybricks.ev3devices import (Motor, ColorSensor,
-                                 InfraredSensor, UltrasonicSensor, GyroSensor, TouchSensor)
-from pybricks.nxtdevices import (LightSensor)
-#from pybricks.nxtdevices import (ColorSensor)
+                                 UltrasonicSensor, TouchSensor)
 from pybricks.parameters import Port, Stop, Direction, Button, Color
 from pybricks.tools import wait, StopWatch, DataLog
 from pybricks.robotics import DriveBase
-from pybricks.media.ev3dev import SoundFile, ImageFile
+
 
 """
 -------------------------------------------------------
@@ -25,8 +23,8 @@ Initialize motors, sensors aswell as the drive base
 # Initialize the EV3 Brick
 ev3 = EV3Brick()
 
-# Killarm Motor is C
-killer_motor = Motor(Port.C)
+# Killarm Motor is B
+killer_motor = Motor(Port.B)
 
 # Initialize the motors
 left_motor = Motor(Port.D)
@@ -34,7 +32,7 @@ right_motor = Motor(Port.A)
 
 
 # Initialize the sensors
-right_color_sensor = ColorSensor(Port.S3)
+front_color_sensor = ColorSensor(Port.S3)
 balloon_ultrasonic_sensor = UltrasonicSensor(Port.S4)
 color_sensor = ColorSensor(Port.S1)
 touch_sensor = TouchSensor(Port.S2)
@@ -46,38 +44,39 @@ robot = DriveBase(left_motor, right_motor, wheel_diameter=55.5, axle_track=104)
 CONSTANTS
 -------------------------------------------------------
 """ 
-# Define the distance to the balloon (in mm)
-BALLOON_DISTANCE = 500
+
 # Define the balloon color
 BALLOON_COLOR = (255, 0, 0)
-COLOR_WHITE = (255, 255, 255)
-ROTATION_ANGLE = 180
-REFLECTION_RIGHT = 10
+COLOR_WHITE = (255, 255, 255) #TODO: add correct values
+#ROTATION_ANGLE = 180
+DEFAULT_REFLECTION_FRONT = 10
 
 SCAN_COUNT = 20
 
 # Define the distance to the balloon (in mm) for the color sensor
-COLOR_SENSOR_DISTANCE = 50
-COLOR_TOLERANCE = 5
+#COLOR_SENSOR_DISTANCE = 50
+COLOR_TOLERANCE = 5 #TODO: adjust tolerance
 
-MAX_TEAM_BALLOONS = 1
+MAX_TEAM_BALLOONS = 1 #TODO: adjust amount of balloons
+
+# Define the speed of the robot
+ROBOT_SPEED_MAX = 100
+
+# Define the default turn angle
+ROBOT_ANGLE_DEFAULT = 0
 
 # speed of killer arm
-SPEED_KILL_ARM = 150
-ANGLE_KILL_ARM = 180
+KILLARM_SPEED = 150
+KILLARM_ANGLE = -180
+KILLARM_ANGLE_DEFAULT = 0
 
 #Sensor constants
-ULTRASONIC_MAX_DISTANCE = 200
+ULTRASONIC_MAX_DISTANCE = 100
 """
 -------------------------------------------------------
 Runtime variables
 -------------------------------------------------------
 """ 
-
-balloon_color_r = 0
-balloon_color_g = 0
-balloon_color_b = 0
-
 # amount of destroyed ballons
 destroyed_balloon_counter = 0
 
@@ -91,84 +90,60 @@ Functions
 -------------------------------------------------------
 """ 
 
-def destroy(color_to_kill):    
-    while balloon_ultrasonic_sensor.distance() > 0 and balloon_ultrasonic_sensor.distance() < ULTRASONIC_MAX_DISTANCE:
-        killer_motor.run_target(SPEED_KILL_ARM, -ANGLE_KILL_ARM)
-        killer_motor.run_target(SPEED_KILL_ARM, 0)
+def destroy():    
+    #balloon_ultrasonic_sensor.distance() > 0 and
+    while balloon_ultrasonic_sensor.distance() < ULTRASONIC_MAX_DISTANCE:
+        killer_motor.run_target(KILLARM_SPEED, KILLARM_ANGLE)
+        killer_motor.run_target(KILLARM_SPEED, KILLARM_ANGLE_DEFAULT)
     destroyed_balloon_counter += 1
-    if color_to_kill is COLOR_WHITE:
+    if curr_color_to_kill is COLOR_WHITE:
         finished = True
         
-
+def getMedianColor():
+    i = 0
+    sum_color_r = 0
+    sum_color_g = 0
+    sum_color_b = 0
+    while i < SCAN_COUNT:
+        color_tupple = color_sensor.rgb()
+        sum_color_r += color_tupple[0]
+        sum_color_g += color_tupple[1]
+        sum_color_b += color_tupple[2]
+        i += 1
+    return (sum_color_r / SCAN_COUNT, sum_color_g / SCAN_COUNT, sum_color_b / SCAN_COUNT)
 
 def scanInitialColor():
-    i = 0
-    sum_color_r = 0
-    sum_color_g = 0
-    sum_color_b = 0
-    while i < SCAN_COUNT:
-        color_tupple = color_sensor.rgb()
-        sum_color_r += color_tupple[0]
-        sum_color_g += color_tupple[1]
-        sum_color_b += color_tupple[2]
-        i += 1
-    balloon_color_r = sum_color_r / SCAN_COUNT
-    balloon_color_g = sum_color_g / SCAN_COUNT
-    balloon_color_b = sum_color_b / SCAN_COUNT
-    print(balloon_color_r)
-    print(balloon_color_g)
-    print(balloon_color_b)
+    BALLOON_COLOR = getMedianColor()
+    print(BALLOON_COLOR[0])
+    print(BALLOON_COLOR[1])
+    print(BALLOON_COLOR[2])
 
-
-def scanForColor(color_to_kill):
-    curr_color = color_sensor.rgb()
+def isColorInRange(mes_color):
     #check if color is within balloon color range
-    r_correct = ((balloon_color_r - COLOR_TOLERANCE) < curr_color[0] < (balloon_color_r + COLOR_TOLERANCE))
-    g_correct = ((balloon_color_g - COLOR_TOLERANCE) < curr_color[1] < (balloon_color_g + COLOR_TOLERANCE))
-    b_correct = ((balloon_color_b - COLOR_TOLERANCE) < curr_color[2] < (balloon_color_b + COLOR_TOLERANCE))
-    
-    if r_correct and g_correct and b_correct:
-        return True
-    else:
-        return False
+    r_correct = ((curr_color_to_kill[0] - COLOR_TOLERANCE) < mes_color[0] < (curr_color_to_kill[0] + COLOR_TOLERANCE))
+    g_correct = ((curr_color_to_kill[1] - COLOR_TOLERANCE) < mes_color[1] < (curr_color_to_kill[1] + COLOR_TOLERANCE))
+    b_correct = ((curr_color_to_kill[2] - COLOR_TOLERANCE) < mes_color[2] < (curr_color_to_kill[2] + COLOR_TOLERANCE))
 
-def scanForColorDetailed(color_to_kill):
+    return r_correct and g_correct and b_correct
+
+def foundColor():
+    curr_color = color_sensor.rgb()
+    return isColorInRange(curr_color)
+
+def foundColorDetailed():
     #if color is within range, perform indepth colour check to avoid false positives
-    i = 0
-    sum_color_r = 0
-    sum_color_g = 0
-    sum_color_b = 0
-    while i < SCAN_COUNT:
-        color_tupple = color_sensor.rgb()
-        sum_color_r += color_tupple[0]
-        sum_color_g += color_tupple[1]
-        sum_color_b += color_tupple[2]
-        i += 1
-    curr_color_r = sum_color_r / SCAN_COUNT
-    curr_color_g = sum_color_g / SCAN_COUNT
-    curr_color_b = sum_color_b / SCAN_COUNT
-    curr_color = (curr_color_r, curr_color_g, curr_color_b)
-
-    #TODO: own function to check if color is in range and return calc value instead
-    r_correct = ((balloon_color_r - COLOR_TOLERANCE) < curr_color[0] < (balloon_color_r + COLOR_TOLERANCE))
-    g_correct = ((balloon_color_g - COLOR_TOLERANCE) < curr_color[1] < (balloon_color_g + COLOR_TOLERANCE))
-    b_correct = ((balloon_color_b - COLOR_TOLERANCE) < curr_color[2] < (balloon_color_b + COLOR_TOLERANCE))
-    if r_correct and g_correct and b_correct:
-        return True
-    else:
-       return False
+    curr_color = getMedianColor()
+    return isColorInRange(curr_color)
 
 def driveIntoPosition(): 
     # robot is in starting position right now
     # turn slighty away from edge to have maneuverability
-    #TODO: constants
     #robot.turn(20)
     #robot.straight(200) # 5cm TODO: adjust distance for competetive setting
     #robot.turn(-35)
 
     # drive straight ahead until touch sensor discovered end 
-    robot.turn(0)       
-    robot.drive(100, 0)
+    robot.drive(ROBOT_SPEED_MAX, ROBOT_ANGLE_DEFAULT)
     while not touch_sensor.pressed():
         pass
     # front edge has now been reached 
@@ -176,25 +151,24 @@ def driveIntoPosition():
     robot.stop()
     
     # turn 90° and avoid obsticle
-    robot.straight(-20) # TODO: adjust distance for competetive setting
+    #TODO: Check if the turns can be summed up and recalculate
+    robot.straight(-20) # TODO: adjust distance for competetive setting, so we have a distance to bricks of 1-1.5cm
     robot.turn(45)
     robot.turn(45)
     robot.turn(45)
     robot.turn(45)
     robot.turn(45)
-    robot.turn(35) #TODO: Test winkl
-
+    robot.turn(35) 
     # robot is now in place to start searching for balloons
 
 def returnToStartPos(distance_to_start_pos): 
     robot.reset() #resets distance driven
     while robot.distance() < distance_to_start_pos:
-        robot.drive(-100, 0)
+        robot.drive(-ROBOT_SPEED_MAX, ROBOT_ANGLE_DEFAULT)
     robot.stop()
     searchBalloon()
     
 def setCurrColorToKill():
-    #TODO: fix this and add 3rgb values
     if destroyed_balloon_counter < MAX_TEAM_BALLOONS: 
         curr_color_to_kill = BALLOON_COLOR
     else:
@@ -206,22 +180,21 @@ def searchBalloon():
     robot.reset() #resets distance driven
 
     # drive forward and look for ballon until edge
-    robot.drive(100, 0)
+    robot.drive(ROBOT_SPEED_MAX, ROBOT_ANGLE_DEFAULT)
     
     edge_reached = False
     while not edge_reached and not finished:
         #check if the sensor discovers the right balloon color 
         #TODO: rename to correct ballon color found or color in range/scope
-        if scanForColor(curr_color_to_kill):
+        if foundColor():
             robot.stop()
-            if scanForColorDetailed(curr_color_to_kill):
-                destroy(curr_color_to_kill)
+            if foundColorDetailed():
+                destroy()
                 setCurrColorToKill()
-            robot.drive(100, 0)
+            robot.drive(ROBOT_SPEED_MAX, ROBOT_ANGLE_DEFAULT)
 
         #edge detection
-        current_reflection_right = right_color_sensor.reflection();
-        if (current_reflection_right < REFLECTION_RIGHT):
+        if (front_color_sensor.reflection() < DEFAULT_REFLECTION_FRONT):
             robot.stop()
             edge_reached = True
 
