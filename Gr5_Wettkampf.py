@@ -113,6 +113,7 @@ def getMedianColor():
     return (sum_color_r / SCAN_COUNT, sum_color_g / SCAN_COUNT, sum_color_b / SCAN_COUNT)
 
 def scanInitialColor():
+    global BALLOON_COLOR
     BALLOON_COLOR = getMedianColor()
     print(BALLOON_COLOR[0])
     print(BALLOON_COLOR[1])
@@ -128,6 +129,11 @@ def isColorInRange(mes_color):
 
 def foundColor():
     curr_color = color_sensor.rgb()
+    #print(' curr_color: ')
+    #print(curr_color)
+    #print(' curr_color_to_kill: ')
+    #print(curr_color_to_kill)
+    #print(isColorInRange(curr_color))
     return isColorInRange(curr_color)
 
 def foundColorDetailed():
@@ -169,6 +175,8 @@ def returnToStartPos(distance_to_start_pos):
     searchBalloon()
     
 def setCurrColorToKill():
+    print('hihihihihi')
+    print(BALLOON_COLOR)
     if destroyed_balloon_counter < MAX_TEAM_BALLOONS: 
         curr_color_to_kill = BALLOON_COLOR
     else:
