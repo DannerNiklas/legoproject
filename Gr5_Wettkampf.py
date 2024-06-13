@@ -92,6 +92,8 @@ Functions
 
 def destroy():    
     #balloon_ultrasonic_sensor.distance() > 0 and
+    global finished
+    global destroyed_balloon_counter
     while balloon_ultrasonic_sensor.distance() < ULTRASONIC_MAX_DISTANCE:
         killer_motor.run_target(KILLARM_SPEED, KILLARM_ANGLE)
         killer_motor.run_target(KILLARM_SPEED, KILLARM_ANGLE_DEFAULT)
@@ -144,9 +146,9 @@ def foundColorDetailed():
 def driveIntoPosition(): 
     # robot is in starting position right now
     # turn slighty away from edge to have maneuverability
-    #robot.turn(20)
-    #robot.straight(200) # 5cm TODO: adjust distance for competetive setting
-    #robot.turn(-35)
+    #robot.turn(10)
+    #robot.straight(500) # 5cm TODO: adjust distance for competetive setting
+    #robot.turn(-17)
 
     # drive straight ahead until touch sensor discovered end 
     robot.drive(ROBOT_SPEED_MAX, ROBOT_ANGLE_DEFAULT)
@@ -158,7 +160,7 @@ def driveIntoPosition():
     
     # turn 90° and avoid obsticle
     #TODO: Check if the turns can be summed up and recalculate
-    robot.straight(-20) # TODO: adjust distance for competetive setting, so we have a distance to bricks of 1-1.5cm
+    robot.straight(-25) # TODO: adjust distance for competetive setting, so we have a distance to bricks of 1-1.5cm
     robot.turn(45)
     robot.turn(45)
     robot.turn(45)
@@ -175,8 +177,7 @@ def returnToStartPos(distance_to_start_pos):
     searchBalloon()
     
 def setCurrColorToKill():
-    print('hihihihihi')
-    print(BALLOON_COLOR)
+    global curr_color_to_kill
     if destroyed_balloon_counter < MAX_TEAM_BALLOONS: 
         curr_color_to_kill = BALLOON_COLOR
     else:
