@@ -70,6 +70,8 @@ KILLARM_SPEED = 150
 KILLARM_ANGLE = -180
 KILLARM_ANGLE_DEFAULT = 0
 
+CORRECT_ANGLE_AFTER = 500
+
 #Sensor constants
 ULTRASONIC_MAX_DISTANCE = 100
 """
@@ -83,6 +85,8 @@ destroyed_balloon_counter = 0
 curr_color_to_kill = BALLOON_COLOR
 
 finished = False
+
+correct_angle_counter = 0
 
 """
 -------------------------------------------------------
@@ -146,9 +150,11 @@ def foundColorDetailed():
 def driveIntoPosition(): 
     # robot is in starting position right now
     # turn slighty away from edge to have maneuverability
-    #robot.turn(10)
-    #robot.straight(500) # 5cm TODO: adjust distance for competetive setting
-    #robot.turn(-17)
+    robot.turn(10)
+    robot.straight(200) # 5cm TODO: adjust distance for competetive setting
+    robot.turn(30)
+    robot.straight(150) # 5cm TODO: adjust distance for competetive setting
+    robot.turn(-34)
 
     # drive straight ahead until touch sensor discovered end 
     robot.drive(ROBOT_SPEED_MAX, ROBOT_ANGLE_DEFAULT)
@@ -160,18 +166,26 @@ def driveIntoPosition():
     
     # turn 90° and avoid obsticle
     #TODO: Check if the turns can be summed up and recalculate
-    robot.straight(-25) # TODO: adjust distance for competetive setting, so we have a distance to bricks of 1-1.5cm
+    robot.straight(-58) # TODO: adjust distance for competetive setting, so we have a distance to bricks of 1-1.5cm
     robot.turn(45)
     robot.turn(45)
     robot.turn(45)
     robot.turn(45)
+    robot.straight(15)
     robot.turn(45)
-    robot.turn(35) 
+    #robot.turn(40) 
     # robot is now in place to start searching for balloons
 
 def returnToStartPos(distance_to_start_pos): 
     robot.reset() #resets distance driven
+    global correct_angle_counter
     while robot.distance() < distance_to_start_pos:
+        if correct_angle_counter > CORRECT_ANGLE_AFTER: 
+            robot.turn(2)
+            robot.drive(-ROBOT_SPEED_MAX, ROBOT_ANGLE_DEFAULT)
+            correct_angle_counter = 0
+            print('corrected angle')
+        correct_angle_counter += 1
         robot.drive(-ROBOT_SPEED_MAX, ROBOT_ANGLE_DEFAULT)
     robot.stop()
     searchBalloon()
@@ -191,8 +205,16 @@ def searchBalloon():
     # drive forward and look for ballon until edge
     robot.drive(ROBOT_SPEED_MAX, ROBOT_ANGLE_DEFAULT)
     
+    global correct_angle_counter
+
     edge_reached = False
     while not edge_reached and not finished:
+        if correct_angle_counter > CORRECT_ANGLE_AFTER: 
+            robot.turn(-1)
+            robot.drive(ROBOT_SPEED_MAX, ROBOT_ANGLE_DEFAULT)
+            correct_angle_counter = 0
+            print('corrected angle')
+        correct_angle_counter += 1
         #check if the sensor discovers the right balloon color 
         #TODO: rename to correct ballon color found or color in range/scope
         if foundColor():
@@ -206,6 +228,9 @@ def searchBalloon():
         if (front_color_sensor.reflection() < DEFAULT_REFLECTION_FRONT):
             robot.stop()
             edge_reached = True
+
+    #robot.turn(15)
+
 
     if not finished:
         returnToStartPos(robot.distance())
